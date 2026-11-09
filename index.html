@@ -15,10 +15,10 @@
                 <h1 class="text-xl font-bold bg-gradient-to-r from-blue-400 to-emerald-400 bg-clip-text text-transparent">
                     ⚡ 新能源純電重卡情報與 TCO 中樞
                 </h1>
-                <p class="text-xs text-slate-400 mt-1">雙引擎 AI 智慧聚合架構 ｜ 內建 TCO 算帳神器、政策路权與供應鏈</p>
+                <p class="text-xs text-slate-400 mt-1">雙引擎 AI 智慧聚合架構 ｜ 內建 TCO 算帳神器、政策路權與供應鏈</p>
             </div>
             <div class="flex items-center gap-3">
-                <!-- 算帳神器按鈕 -->
+                <!-- 🧮 算帳神器按鈕 -->
                 <button onclick="openTcoModal()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-medium rounded-lg transition shadow-lg shadow-emerald-900/30 flex items-center gap-2">
                     🧮 開啟 TCO 算帳神器
                 </button>
@@ -353,7 +353,6 @@
             const electricPrice = parseFloat(document.getElementById('tco-electric-price').value) || 0;
             const priceDiff = parseFloat(document.getElementById('tco-price-diff').value) || 0;
 
-            // 每年燃料費計算 (元)
             const dieselCost = (km / 100) * dieselRate * dieselPrice;
             const evCost = (km / 100) * evRate * electricPrice;
             const annualSaving = dieselCost - evCost;
@@ -362,7 +361,6 @@
             document.getElementById('res-ev-cost').innerText = evCost.toLocaleString('zh-CN', { maximumFractionDigits: 0 }) + ' 元';
             document.getElementById('res-saving').innerText = annualSaving.toLocaleString('zh-CN', { maximumFractionDigits: 0 }) + ' 元';
 
-            // 計算回本週期 (年)
             const paybackDiv = document.getElementById('res-payback');
             if (annualSaving > 0) {
                 const paybackYears = priceDiff / annualSaving;
