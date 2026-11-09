@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>新能源纯电重卡 ⚡ AI 智慧工作站</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; }
+        .tab-active { border-bottom: 2px solid #2563eb; color: #2563eb; font-weight: 600; }
+        .glass-card { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+    </style>
+</head>
+<body class="min-h-screen text-gray-800">
+    <!-- 顶部导航栏 -->
+    <nav class="bg-white shadow-sm sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <span class="text-2xl mr-2">⚡</span>
+                    <span class="font-bold text-xl text-gray-900">EV Truck Hub</span>
+                </div>
+                <div class="flex items-center space-x-8">
+                    <button onclick="switchTab('tco')" id="tab-tco" class="h-full px-1 tab-active text-gray-500 hover:text-gray-700 transition-colors">📊 TCO 精算神器</button>
+                    <button onclick="switchTab('intel')" id="tab-intel" class="h-full px-1 text-gray-500 hover:text-gray-700 transition-colors">📰 行业情报早报</button>
+                </div>
+                <div class="flex items-center">
+                    <button onclick="showCheer()" class="bg-blue-50 text-blue-600 px-4 py-2 rounded-full text-sm font-medium hover:bg-blue-100 transition">
+                        🔋 祝你今天也轻松签大单！
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 主内容区 -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+        <!-- TCO 算账板块 -->
+        <div id="view-tco" class="block">
+            <!-- 场景快速切换 -->
+            <div class="mb-6 flex flex-wrap gap-3">
+                <button onclick="setScenario(200, 1.4, 40)" class="px-4 py-2 bg-white border border-gray-200 rounded-lg shadow-sm hover:border-blue-500 hover:text-blue-600 transition text-sm font-medium">⚓ 港口短倒 (低速高耗)</button>
+                <button onclick="setScenario(300, 1.6, 50)" class="px-4 py-2 bg-white border border-gray-200 rounded-lg shadow-sm hover:border-blue-500 hover:text-blue-600 transition text-sm font-medium">⛰️ 矿区重载 (重去空回)</button>
+                <button onclick="setScenario(600, 1.2, 33)" class="px-4 py-2 bg-white border border-gray-200 rounded-lg shadow-sm hover:border-blue-500 hover:text-blue-600 transition text-sm font-medium">🛣️ 干线物流 (高速定线)</button>
+                <button onclick="setScenario(250, 1.5, 45)" class="px-4 py-2 bg-white border border-gray-200 rounded-lg shadow-sm hover:border-blue-500 hover:text-blue-600 transition text-sm font-medium">🏗️ 城建渣土 (频繁起停)</button>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- 参数调节区 -->
+                <div class="lg:col-span-1 glass-card p-6 border border-gray-100">
+                    <h2 class="text-lg font-bold mb-4 flex items-center"><span class="mr-2">⚙️</span> 客户营运参数</h2>
+                    
+                    <div class="space-y-6">
+                        <!-- 车队规模 -->
+                        <div>
+                            <div class="flex justify-between mb-1">
+                                <label class="text-sm font-medium text-gray-700">采购车队规模 (台)</label>
+                            </div>
+                            <div class="flex items-center gap-4">
+                                <input type="range" id="fleetSize" min="1" max="3000" value="50" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600" oninput="syncInput('fleetSize')">
+                                <input type="number" id="fleetSize-input" value="50" class="w-20 px-2 py-1 text-sm border rounded text-right" oninput="syncSlider('fleetSize')">
+                            </div>
+                        </div>
+
+                        <!-- 日均里程 -->
+                        <div>
+                            <div class="flex justify-between mb-1">
+                                <label class="text-sm font-medium text-gray-700">单车日均里程 (km)</label>
+                            </div>
+                            <div class="flex items-center gap-4">
+                                <input type="range" id="dailyMileage" min="50" max="800" value="300" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600" oninput="syncInput('dailyMileage')">
+                                <input type="number" id="dailyMileage-input" value="300" class="w-20 px-2 py-1 text-sm border rounded text-right" oninput="syncSlider('dailyMileage')">
+                            </div>
+                        </div>
+
+                        <div class="h-px bg-gray-200 my-4"></div>
+
+                        <!-- 纯电参数 -->
+                        <div class="p-4 bg-blue-50/50 rounded-lg border border-blue-100">
+                            <h3 class="text-sm font-bold text-blue-800 mb-3">纯电重卡参数 (换电/快充)</h3>
+                            <div class="space-y-4">
+                                <div>
+                                    <div class="flex justify-between mb-1"><label class="text-xs text-gray-600">平均电价 (元/度)</label></div>
+                                    <div class="flex items-center gap-2">
+                                        <input type="range" id="elecPrice" min="0.3" max="3.0" step="0.05" value="0.8" class="w-full h-1 bg-blue-200 rounded-lg appearance-none cursor-pointer accent-blue-600" oninput="syncInput('elecPrice')">
+                                        <input type="number" id="elecPrice-input" value="0.8" step="0.05" class="w-16 px-1 py-1 text-xs border rounded text-right" oninput="syncSlider('elecPrice')">
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="flex justify-between mb-1"><label class="text-xs text-gray-600">综合电耗 (度/百公里)</label></div>
+                                    <div class="flex items-center gap-2">
+                                        <input type="range" id="elecConsume" min="100" max="250" value="140" class="w-full h-1 bg-blue-200 rounded-lg appearance-none cursor-pointer accent-blue-600" oninput="syncInput('elecConsume')">
+                                        <input type="number" id="elecConsume-input" value="140" class="w-16 px-1 py-1 text-xs border rounded text-right" oninput="syncSlider('elecConsume')">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 燃油参数 -->
+                        <div class="p-4 bg-gray-50 rounded-lg border border-gray-200">
+                            <h3 class="text-sm font-bold text-gray-700 mb-3">对比燃油重卡参数</h3>
+                            <div class="space-y-4">
+                                <div>
+                                    <div class="flex justify-between mb-1"><label class="text-xs text-gray-600">当前柴油价格 (元/升)</label></div>
+                                    <div class="flex items-center gap-2">
+                                        <input type="range" id="oilPrice" min="5.0" max="12.0" step="0.1" value="7.5" class="w-full h-1 bg-gray-300 rounded-lg appearance-none cursor-pointer accent-gray-600" oninput="syncInput('oilPrice')">
+                                        <input type="number" id="oilPrice-input" value="7.5" step="0.1" class="w-16 px-1 py-1 text-xs border rounded text-right" oninput="syncSlider('oilPrice')">
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="flex justify-between mb-1"><label class="text-xs text-gray-600">综合油耗 (升/百公里)</label></div>
+                                    <div class="flex items-center gap-2">
+                                        <input type="range" id="oilConsume" min="25" max="60" value="35" class="w-full h-1 bg-gray-300 rounded-lg appearance-none cursor-pointer accent-gray-600" oninput="syncInput('oilConsume')">
+                                        <input type="number" id="oilConsume-input" value="35" class="w-16 px-1 py-1 text-xs border rounded text-right" oninput="syncSlider('oilConsume')">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 结果展示区 -->
+                <div class="lg:col-span-2 space-y-6">
+                    <!-- 核心数据卡片 -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="glass-card p-5 border border-green-100 border-l-4 border-l-green-500">
+                            <p class="text-sm text-gray-500 mb-1">5年总计节省能耗费</p>
+                            <p class="text-3xl font-bold text-gray-900">¥ <span id="res-total-save">0</span> <span class="text-base font-normal text-gray-500">万</span></p>
+                            <p class="text-xs text-green-600 mt-2 flex items-center">↓ 较燃油车成本下降 <span id="res-percent" class="ml-1 font-bold">0%</span></p>
+                        </div>
+                        <div class="glass-card p-5 border border-blue-100 border-l-4 border-l-blue-500">
+                            <p class="text-sm text-gray-500 mb-1">购车差价回本周期</p>
+                            <p class="text-3xl font-bold text-gray-900"><span id="res-payback">0</span> <span class="text-base font-normal text-gray-500">个月</span></p>
+                            <p class="text-xs text-blue-600 mt-2">按纯电比燃油贵15万/台估算</p>
+                        </div>
+                        <div class="glass-card p-5 border border-emerald-100 border-l-4 border-l-emerald-400">
+                            <p class="text-sm text-gray-500 mb-1">5年车队总减碳量</p>
+                            <p class="text-3xl font-bold text-gray-900"><span id="res-carbon">0</span> <span class="text-base font-normal text-gray-500">吨</span></p>
+                            <p class="text-xs text-emerald-600 mt-2">可转化为绿电碳配额收益</p>
+                        </div>
+                    </div>
+
+                    <!-- 图表区 -->
+                    <div class="glass-card p-6 border border-gray-100">
+                        <div class="flex justify-between items-center mb-4">
+                            <h2 class="text-lg font-bold">📈 5年累计 TCO 成本走势对比 (万/车队)</h2>
+                        </div>
+                        <div class="relative h-64 w-full">
+                            <canvas id="tcoChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- 提案话术生成 -->
+                    <div class="glass-card p-6 border border-blue-100 bg-blue-50/30">
+                        <div class="flex justify-between items-center mb-3">
+                            <h2 class="text-md font-bold text-blue-900">💬 大客户提案一键话术</h2>
+                            <button onclick="copyPitch()" class="text-sm bg-white border border-blue-200 text-blue-600 px-3 py-1.5 rounded hover:bg-blue-50 transition">
+                                📋 复制文案
+                            </button>
+                        </div>
+                        <p id="pitch-text" class="text-sm text-gray-700 leading-relaxed"></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 情报板块 -->
+        <div id="view-intel" class="hidden space-y-6">
+            <div class="flex justify-between items-end mb-6">
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-900">行业政策 & 竞品情报库</h2>
+                    <p class="text-sm text-gray-500 mt-1">自动同步 GitHub 每日早报数据，也可手动新增笔记。</p>
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="syncCloudIntel()" class="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition shadow-sm font-medium">
+                        🔄 获取云端最新情报
+                    </button>
+                    <button onclick="openIntelModal()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition shadow-sm font-medium">
+                        + 手动新增情报
+                    </button>
+                </div>
+            </div>
+
+            <!-- 情报网格 -->
+            <div id="intel-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- JavaScript 动态渲染 -->
+            </div>
+        </div>
+    </main>
+
+    <!-- 新增/编辑情报 Modal -->
+    <div id="intelModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-[100]">
+        <div class="bg-white rounded-xl shadow-xl w-full max-w-lg overflow-hidden">
+            <div class="px-6 py-4 border-b flex justify-between items-center">
+                <h3 id="modal-title" class="font-bold text-lg">新增情报笔记</h3>
+                <button onclick="closeIntelModal()" class="text-gray-400 hover:text-gray-600">✕</button>
+            </div>
+            <div class="p-6 space-y-4">
+                <input type="hidden" id="intel-id">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">情报分类</label>
+                    <select id="intel-category" class="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                        <option value="policy">🏛️ 政策路权</option>
+                        <option value="competitor">🎯 竞品动态</option>
+                        <option value="battery">🔋 电池与补能</option>
+                        <option value="bidding">💰 招投标线索</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">标题 (25字以内)</label>
+                    <input type="text" id="intel-title" class="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="例如：某市发布纯电重卡路权开放通知">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">核心摘要</label>
+                    <textarea id="intel-summary" rows="3" class="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="简述关键数据或动态..."></textarea>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">应对建议 / 行动</label>
+                    <textarea id="intel-action" rows="2" class="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none" placeholder="我们团队应该怎么做..."></textarea>
+                </div>
+            </div>
+            <div class="px-6 py-4 border-t bg-gray-50 flex justify-end gap-3">
+                <button onclick="closeIntelModal()" class="px-4 py-2 border rounded-lg text-sm hover:bg-gray-100">取消</button>
+                <button onclick="saveIntel()" class="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700">保存情报</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // === UI 交互逻辑 ===
+        function switchTab(tab) {
+            document.getElementById('view-tco').classList.toggle('hidden', tab !== 'tco');
+            document.getElementById('view-intel').classList.toggle('hidden', tab !== 'intel');
+            document.getElementById('tab-tco').classList.toggle('tab-active', tab === 'tco');
+            document.getElementById('tab-tco').classList.toggle('text-gray-500', tab !== 'tco');
+            document.getElementById('tab-intel').classList.toggle('tab-active', tab === 'intel');
+            document.getElementById('tab-intel').classList.toggle('text-gray-500', tab !== 'intel');
+            if(tab === 'intel') renderIntel();
+        }
+
+        function showCheer() {
+            const msgs = ["今天也要冲刺大单哦！", "数据搞定，谈判必赢！", "辛苦啦，喝口水休息一下吧☕", "你是最棒的！🚀"];
+            alert(msgs[Math.floor(Math.random() * msgs.length)]);
+        }
+
+        // === 同步输入框与滑块 ===
+        function syncInput(id) {
+            const val = document.getElementById(id).value;
+            document.getElementById(id + '-input').value = val;
+            calculateTCO();
+        }
+        function syncSlider(id) {
+            const val = document.getElementById(id + '-input').value;
+            document.getElementById(id).value = val;
+            calculateTCO();
+        }
+
+        function setScenario(mileage, elec, oil) {
+            document.getElementById('dailyMileage').value = mileage;
+            document.getElementById('elecConsume').value = elec * 100;
+            document.getElementById('oilConsume').value = oil * 100;
+            syncInput('dailyMileage'); syncInput('elecConsume'); syncInput('oilConsume');
+        }
+
+        // === TCO 核心计算逻辑 ===
+        let chartInstance = null;
+        function calculateTCO() {
+            const fleet = parseFloat(document.getElementById('fleetSize-input').value) || 0;
+            const kmPerDay = parseFloat(document.getElementById('dailyMileage-input').value) || 0;
+            const elecPrice = parseFloat(document.getElementById('elecPrice-input').value) || 0;
+            const elecCons = parseFloat(document.getElementById('elecConsume-input').value) / 100 || 0;
+            const oilPrice = parseFloat(document.getElementById('oilPrice-input').value) || 0;
+            const oilCons = parseFloat(document.getElementById('oilConsume-input').value) / 100 || 0;
+
+            const workDays = 330;
+            const evCostPerKm = elecPrice * elecCons;
+            const fuelCostPerKm = oilPrice * oilCons;
+            const savePerKm = fuelCostPerKm - evCostPerKm;
+
+            const dailySaveTotal = savePerKm * kmPerDay * fleet;
+            const yearlySaveTotal = dailySaveTotal * workDays;
+            const fiveYearSaveTotal = yearlySaveTotal * 5;
+
+            const evPremiumPerTruck = 150000;
+            const totalPremium = evPremiumPerTruck * fleet;
+            const monthlySave = yearlySaveTotal / 12;
+            const paybackMonths = monthlySave > 0 ? (totalPremium / monthlySave).toFixed(1) : "无法回本";
+
+            const carbonPerLiter = 2.63;
+            const dailyOil = oilCons * kmPerDay * fleet;
+            const yearlyCarbon = (dailyOil * workDays * carbonPerLiter) / 1000;
+            const fiveYearCarbon = yearlyCarbon * 5;
+
+            document.getElementById('res-total-save').innerText = (fiveYearSaveTotal / 10000).toFixed(0);
+            document.getElementById('res-percent').innerText = fuelCostPerKm > 0 ? ((savePerKm / fuelCostPerKm) * 100).toFixed(0) + '%' : '0%';
+            document.getElementById('res-payback').innerText = paybackMonths;
+            document.getElementById('res-carbon').innerText = fiveYearCarbon.toFixed(0);
+
+            generatePitch(fleet, (fiveYearSaveTotal / 10000).toFixed(0), paybackMonths, fiveYearCarbon.toFixed(0));
+            updateChart(fleet, evPremiumPerTruck, yearlySaveTotal, fuelCostPerKm * kmPerDay * workDays * fleet);
+        }
+
+        function generatePitch(fleet, save, payback, carbon) {
+            const pitch = `王总您好，针对咱们 ${fleet} 台重卡的营运场景，我做了一个精算模型：若替换为我们的纯电重卡，依靠极低的度电成本，车队5年累计可节省直接能耗成本约 ${save} 万元！前期虽然单车采购价稍高，但仅需 ${payback} 个月即可利用省下的油费抹平差价。此外，5年还能为您企业贡献约 ${carbon} 吨的减碳指标，绝对是降本增效的最优解。您看下午有空我带详细方案给您汇报一下吗？`;
+            document.getElementById('pitch-text').innerText = pitch;
+        }
+
+        function copyPitch() {
+            navigator.clipboard.writeText(document.getElementById('pitch-text').innerText);
+            alert("✅ 话术已复制！");
+        }
+
+        function updateChart(fleet, premium, yearlySave, yearlyFuelCost) {
+            const ctx = document.getElementById('tcoChart').getContext('2d');
+            
+            const labels = ['购车(第0年)', '第1年', '第2年', '第3年', '第4年', '第5年'];
+            let evCost = [premium * fleet / 10000];
+            let fuelCost = [0];
+
+            let currentEv = evCost[0];
+            let currentFuel = 0;
+            const yearlyEvCost = yearlyFuelCost - yearlySave;
+
+            for(let i=1; i<=5; i++) {
+                currentEv += (yearlyEvCost / 10000);
+                currentFuel += (yearlyFuelCost / 10000);
+                evCost.push(currentEv.toFixed(0));
+                fuelCost.push(currentFuel.toFixed(0));
+            }
+
+            if(chartInstance) chartInstance.destroy();
+            
+            chartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        { label: '纯电重卡累计支出', data: evCost, borderColor: '#2563eb', backgroundColor: 'rgba(37,99,235,0.1)', fill: true, tension: 0.3, borderWidth: 3 },
+                        { label: '燃油重卡累计支出', data: fuelCost, borderColor: '#6b7280', backgroundColor: 'transparent', borderDash: [5, 5], tension: 0.3, borderWidth: 2 }
+                    ]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top' } }, scales: { y: { beginAtZero: true, title: { display: true, text: '万元' } } } }
+            });
+        }
+
+        // === 情报板块 CRUD 逻辑 ===
+        let intelList = [];
+
+        function initIntel() {
+            const saved = localStorage.getItem('ev_truck_intel_v1');
+            if (saved) {
+                intelList = JSON.parse(saved);
+            } else {
+                intelList = []; // 初始为空，依靠 syncCloudIntel 抓取
+            }
+            syncCloudIntel(); // 页面加载时自动抓取一次
+        }
+
+        // 核心：自动读取 GitHub 生成的 today_news.json
+        async function syncCloudIntel() {
+            try {
+                const btn = document.querySelector('button[onclick="syncCloudIntel()"]');
+                if(btn) btn.innerText = "⏳ 同步中...";
+
+                const res = await fetch('./today_news.json?t=' + new Date().getTime());
+                if (!res.ok) throw new Error("JSON Fetch failed");
+                const cloudData = await res.json();
+                
+                if (Array.isArray(cloudData) && cloudData.length > 0) {
+                    const localSaved = JSON.parse(localStorage.getItem('ev_truck_intel_v1') || '[]');
+                    const existingTitles = new Set(localSaved.map(item => item.title));
+                    
+                    let newAdded = 0;
+                    cloudData.forEach(item => {
+                        if (!existingTitles.has(item.title)) {
+                            localSaved.unshift(item);
+                            newAdded++;
+                        }
+                    });
+                    
+                    if (newAdded > 0 || intelList.length === 0) {
+                        intelList = localSaved;
+                        saveIntelToStorage();
+                        renderIntel();
+                    }
+                    if(btn) btn.innerText = `✅ 同步成功 (+${newAdded})`;
+                } else {
+                    if(btn) btn.innerText = "🔄 获取云端最新情报";
+                }
+                setTimeout(() => { if(btn) btn.innerText = "🔄 获取云端最新情报"; }, 3000);
+            } catch (e) {
+                console.log('目前为本地离线模式或暂无云端 JSON', e);
+                const btn = document.querySelector('button[onclick="syncCloudIntel()"]');
+                if(btn) btn.innerText = "⚠️ 无法连接云端";
+                setTimeout(() => { if(btn) btn.innerText = "🔄 获取云端最新情报"; }, 3000);
+                renderIntel(); // 失败则渲染本地数据
+            }
+        }
+
+        function saveIntelToStorage() {
+            localStorage.setItem('ev_truck_intel_v1', JSON.stringify(intelList));
+        }
+
+        const tagColors = {
+            'policy': 'bg-red-100 text-red-700 border-red-200',
+            'competitor': 'bg-orange-100 text-orange-700 border-orange-200',
+            'battery': 'bg-blue-100 text-blue-700 border-blue-200',
+            'bidding': 'bg-emerald-100 text-emerald-700 border-emerald-200'
+        };
+
+        const tagNames = { 'policy': '🏛️ 政策路权', 'competitor': '🎯 竞品动态', 'battery': '🔋 电池与补能', 'bidding': '💰 招投标线索' };
+
+        function renderIntel() {
+            const grid = document.getElementById('intel-grid');
+            grid.innerHTML = '';
+            
+            if(intelList.length === 0) {
+                grid.innerHTML = '<div class="col-span-full text-center text-gray-500 py-10">暂无情报数据，请点击右上角新增或等待云端抓取。</div>';
+                return;
+            }
+
+            intelList.forEach((item, index) => {
+                const colorClass = tagColors[item.category] || tagColors['policy'];
+                const tagName = item.tag || tagNames[item.category];
+                const card = `
+                    <div class="glass-card p-5 border border-gray-100 flex flex-col h-full hover:shadow-md transition group">
+                        <div class="flex justify-between items-start mb-3">
+                            <span class="text-xs font-bold px-2.5 py-1 rounded border ${colorClass}">${tagName}</span>
+                            <div class="flex gap-2 opacity-0 group-hover:opacity-100 transition">
+                                <button onclick="editIntel(${index})" class="text-xs text-blue-500 hover:underline">编辑</button>
+                                <button onclick="deleteIntel(${index})" class="text-xs text-red-500 hover:underline">删除</button>
+                            </div>
+                        </div>
+                        <h3 class="font-bold text-gray-900 mb-2 leading-tight">${item.title}</h3>
+                        <p class="text-sm text-gray-600 mb-4 flex-grow">${item.summary}</p>
+                        <div class="bg-gray-50 p-3 rounded-lg border border-gray-100">
+                            <p class="text-xs font-bold text-gray-700 mb-1">💡 应对建议：</p>
+                            <p class="text-xs text-gray-600">${item.action}</p>
+                        </div>
+                        <div class="mt-3 text-right">
+                            <span class="text-[10px] text-gray-400">更新于: ${item.date}</span>
+                        </div>
+                    </div>
+                `;
+                grid.innerHTML += card;
+            });
+        }
+
+        function openIntelModal(index = -1) {
+            document.getElementById('intelModal').classList.replace('hidden', 'flex');
+            if (index > -1) {
+                document.getElementById('modal-title').innerText = "编辑情报笔记";
+                document.getElementById('intel-id').value = index;
+                document.getElementById('intel-category').value = intelList[index].category;
+                document.getElementById('intel-title').value = intelList[index].title;
+                document.getElementById('intel-summary').value = intelList[index].summary;
+                document.getElementById('intel-action').value = intelList[index].action;
+            } else {
+                document.getElementById('modal-title').innerText = "新增情报笔记";
+                document.getElementById('intel-id').value = "";
+                document.getElementById('intel-category').value = "policy";
+                document.getElementById('intel-title').value = "";
+                document.getElementById('intel-summary').value = "";
+                document.getElementById('intel-action').value = "";
+            }
+        }
+
+        function closeIntelModal() {
+            document.getElementById('intelModal').classList.replace('flex', 'hidden');
+        }
+
+        function saveIntel() {
+            const index = document.getElementById('intel-id').value;
+            const category = document.getElementById('intel-category').value;
+            const newItem = {
+                category: category,
+                tag: tagNames[category],
+                title: document.getElementById('intel-title').value,
+                summary: document.getElementById('intel-summary').value,
+                action: document.getElementById('intel-action').value,
+                date: new Date().toISOString().split('T')[0]
+            };
+
+            if (!newItem.title) { alert("标题不能为空！"); return; }
+
+            if (index === "") { intelList.unshift(newItem); } 
+            else { intelList[index] = newItem; }
+
+            saveIntelToStorage();
+            renderIntel();
+            closeIntelModal();
+        }
+
+        function deleteIntel(index) {
+            if (confirm("确定要删除这条情报吗？")) {
+                intelList.splice(index, 1);
+                saveIntelToStorage();
+                renderIntel();
+            }
+        }
+
+        // 初始化
+        window.onload = () => {
+            calculateTCO();
+            initIntel();
+        };
+    </script>
+</body>
+</html>
