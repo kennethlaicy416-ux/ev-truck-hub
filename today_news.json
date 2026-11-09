@@ -1,38 +1,53 @@
-[
-  {
-    "id": 1,
-    "category": "policy",
-    "tag": "🏛️ 政策路权",
-    "title": "多地加速推进重卡换电站建设与路权放宽",
-    "date": "2026-11-10",
-    "summary": "近期多地交通与能源主管部门联合发文，明确对新能源纯电及换电重卡给予通行优先权及电价优惠，大幅降低干线与港口短倒营运成本。",
-    "action": "建议针对主城及港口周边物流大客户，优先推送换电重卡路权优势与峰谷电价差测算方案。"
-  },
-  {
-    "id": 2,
-    "category": "competitor",
-    "tag": "🎯 竞品动态",
-    "title": "头部主机厂密集发布长续航大电量牵引车",
-    "date": "2026-11-10",
-    "summary": "三一、徐工及解放等主流车企近日相继推出升级版纯电牵引车，电量普遍提升至 500kWh 以上，续航里程突破 400 公里，加剧干线物流市场竞争。",
-    "action": "重点向客户强调我们的三电系统热管理效率与 TCO 全生命周期成本优势，形成差异化对标。"
-  },
-  {
-    "id": 3,
-    "category": "battery",
-    "tag": "🔋 电池与补能",
-    "title": "重卡换电标准统一进程加快，补能效率提升",
-    "date": "2026-11-10",
-    "summary": "行业协会与主流电池供应商正加速推进重卡换电底盘及接口标准化，未来5分钟换电模式将全面普及，彻底解决长途干线补能痛点。",
-    "action": "在商务谈判中可向车队客户展示换电模式高出勤率的数据模型，打消客户对补能耗时的顾虑。"
-  },
-  {
-    "id": 4,
-    "category": "bidding",
-    "tag": "💰 招投标线索",
-    "title": "大型钢铁与矿山企业启动新一轮新能源车队招标",
-    "date": "2026-11-10",
-    "summary": "华北及西北多处大型矿区与钢铁集团发布公告，大规模招标替换传统燃油重卡，对车辆载重爬坡能力与出勤率提出极高考核标准。",
-    "action": "立即组建矿区重载场景专项攻坚小组，结合本工具的矿区重载 TCO 模版准备投标汇报材料。"
-  }
-]
+import os
+import json
+from datetime import datetime
+import google.generativeai as genai
+
+# 1. 初始化 Gemini API
+API_KEY = os.environ.get("GEMINI_API_KEY")
+genai.configure(api_key=API_KEY)
+
+# 2. 使用支援聯網與結構化輸出的模型
+model = genai.GenerativeModel(
+    'gemini-2.5-flash',
+    generation_config={
+        "response_mime_type": "application/json",
+        "temperature": 0.7
+    }
+)
+
+def fetch_and_analyze_news():
+    today_str = datetime.now().strftime("%Y-%m-%d")
+    
+    # 提示詞直接結合搜尋與分析要求
+    prompt = f"""
+    你是一位資深的中國新能源純電重卡（Heavy EV Truck）市場與銷售情報分析師。
+    請即時搜尋並掌握當前中國市場（如三一重工、徐工、解放、重汽、寧德時代等企業）在新能源重卡、換電重卡、電池補能、路權政策及大宗招投標方麵的最新動態。
+    請挑選出 4 到 6 條最具商業與銷售價值的核心情報，並嚴格以 JSON Array 格式輸出，每個物件包含以下欄位：
+    - "id": 唯一數字編號 (1, 2, 3...)
+    - "category": 必須是 ["policy", "competitor", "battery", "bidding"] 之一
+    - "tag": 對應的中文標籤 ["🏛️ 政策路权", "🎯 竞品动态", "🔋 电池与补能", "💰 招投标线索"] 之一
+    - "title": 簡潔有力的情報標題（簡體中文，25字以內）
+    - "date": "{today_str}"
+    - "summary": 核心內容摘要與關鍵數據（簡體中文，50-80字）
+    - "action": 針對我們銷售與大客戶團隊的應對建議（簡體中文，30-50字）
+    """
+    
+    try:
+        print("正在呼叫 Gemini 進行聯網情報搜集與分析...")
+        # 讓 AI 聯網並生成結果
+        response = model.generate_content(prompt)
+        structured_data = json.loads(response.text)
+        return structured_data
+    except Exception as e:
+        print(f"聯網分析失敗: {e}")
+        return []
+
+if __name__ == "__main__":
+    news_data = fetch_and_analyze_news()
+    if news_data:
+        with open("today_news.json", "w", encoding="utf-8") as f:
+            json.dump(news_data, f, ensure_ascii=False, indent=2)
+        print("✅ 成功更新 today_news.json！")
+    else:
+        print("⚠️ 未能生成有效數據。")
