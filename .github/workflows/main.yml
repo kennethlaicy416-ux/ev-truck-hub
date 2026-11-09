@@ -21,14 +21,14 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: 3. 安裝 Python 依賴與 Playwright 瀏覽器
+      - name: 3. 安裝 Python 依賴
         run: |
-          pip install playwright google-generativeai
-          playwright install chromium --with-deps
+          pip install google-generativeai openai
 
-      - name: 4. 執行爬蟲與 Gemini AI 提煉
+      - name: 4. 執行多模型情報聚合
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
         run: python daily_scraper.py
 
       - name: 5. 自動推送最新 today_news.json 到網頁前端
