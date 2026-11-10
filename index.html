@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>新能源纯电重卡 ⚡ TCO 精算与下山动能回收工作站</title>
+    <title>新能源纯电重卡 ⚡ TCO 精算与大客户提案工作站</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Chart.js -->
@@ -105,13 +105,13 @@
                 <div>
                     <div class="flex items-center gap-2">
                         <h1 class="text-lg sm:text-xl font-bold tracking-tight bg-gradient-to-r from-white via-slate-100 to-emerald-300 bg-clip-text text-transparent">
-                            新能源纯电重卡 ⚡ TCO 精算与下山动能回收工作站
+                            新能源纯电重卡 ⚡ TCO 精算与提案工作站
                         </h1>
                         <span class="hidden sm:inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                            <i data-lucide="shield-check" class="w-3 h-3 mr-1"></i> 包含 0-100% 动能回收模型
+                            <i data-lucide="shield-check" class="w-3 h-3 mr-1"></i> 含 0-100% 动能回收模型
                         </span>
                     </div>
-                    <p class="text-xs text-slate-400">Heavy-Duty EV Truck TCO & Regenerative Braking Model</p>
+                    <p class="text-xs text-slate-400">Heavy-Duty EV Truck TCO & Proposal Engine</p>
                 </div>
             </div>
 
@@ -130,26 +130,29 @@
     <!-- Main Content Container -->
     <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-8 py-6 space-y-6">
         
-        <!-- Scenario Quick Presets Bar -->
+        <!-- Scenario Quick Presets Bar (改回原本经典的 4 个场景名称) -->
         <div class="glass-card rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div class="flex items-center gap-2.5">
                 <div class="p-2 rounded-lg bg-emerald-500/10 text-emerald-400">
-                    <i data-lucide="mountain" class="w-5 h-5"></i>
+                    <i data-lucide="zap" class="w-5 h-5"></i>
                 </div>
                 <div>
                     <h2 class="text-sm font-semibold text-white">一键套用典型重卡运营场景</h2>
-                    <p class="text-xs text-slate-400">点击快速切换平原、矿山与山区下山重载工况的预设参数</p>
+                    <p class="text-xs text-slate-400">点击快速切换不同工况的预设能耗、里程与车价参数，秒算客户回本周期</p>
                 </div>
             </div>
             <div class="flex flex-wrap gap-2 w-full sm:w-auto">
                 <button onclick="applyPreset('port')" id="preset-port" class="preset-btn flex-1 sm:flex-initial px-3 py-1.5 rounded-xl text-xs font-medium bg-slate-800 hover:bg-emerald-600/20 hover:text-emerald-300 border border-slate-700 transition-all">
-                    ⚓ 平原港口短倒 (0%动能回收)
+                    ⚓ 港口短倒 (250km/天)
                 </button>
                 <button onclick="applyPreset('mine')" id="preset-mine" class="preset-btn flex-1 sm:flex-initial px-3 py-1.5 rounded-xl text-xs font-medium bg-emerald-600/20 text-emerald-300 border border-emerald-500/50 transition-all">
-                    ⛰️ 矿区/山区重载 (50%动能回收)
+                    ⛰️ 矿区/钢厂重载 (300km/天)
                 </button>
-                <button onclick="applyPreset('extremeMountain')" id="preset-extremeMountain" class="preset-btn flex-1 sm:flex-initial px-3 py-1.5 rounded-xl text-xs font-medium bg-slate-800 hover:bg-emerald-600/20 hover:text-emerald-300 border border-slate-700 transition-all">
-                    🏔️ 极端高山专线 (80%动能回收)
+                <button onclick="applyPreset('trunk')" id="preset-trunk" class="preset-btn flex-1 sm:flex-initial px-3 py-1.5 rounded-xl text-xs font-medium bg-slate-800 hover:bg-emerald-600/20 hover:text-emerald-300 border border-slate-700 transition-all">
+                    🛣️ 中长途干线物流 (500km/天)
+                </button>
+                <button onclick="applyPreset('muck')" id="preset-muck" class="preset-btn flex-1 sm:flex-initial px-3 py-1.5 rounded-xl text-xs font-medium bg-slate-800 hover:bg-emerald-600/20 hover:text-emerald-300 border border-slate-700 transition-all">
+                    🏗️ 城建渣土/商砼 (200km/天)
                 </button>
             </div>
         </div>
@@ -208,7 +211,7 @@
                         </div>
                     </div>
 
-                    <!-- 移到这里的 0-100% 动能回收滑杆与输入项 -->
+                    <!-- 0-100% 动能回收滑杆与输入项 -->
                     <div class="pt-2 border-t border-slate-800">
                         <div class="flex justify-between items-center text-xs mb-1.5">
                             <span class="text-emerald-300 font-bold flex items-center gap-1">
@@ -290,13 +293,13 @@
                         <div class="grid grid-cols-2 gap-3 pt-1">
                             <div>
                                 <div class="flex justify-between items-center text-[11px] mb-1">
-                                    <span class="text-slate-300">百公里油耗 (山区重载)</span>
+                                    <span class="text-slate-300">百公里油耗</span>
                                     <div class="flex items-center gap-1">
-                                        <input type="number" id="num-iceLiter" value="45" min="25" max="80" step="1" oninput="syncInput('iceLiter', 'num'); calculateTCO()" class="w-12 bg-slate-900 border border-amber-500/40 rounded px-1 py-0.5 text-right font-semibold text-amber-300 focus:outline-none">
+                                        <input type="number" id="num-iceLiter" value="38" min="20" max="80" step="1" oninput="syncInput('iceLiter', 'num'); calculateTCO()" class="w-12 bg-slate-900 border border-amber-500/40 rounded px-1 py-0.5 text-right font-semibold text-amber-300 focus:outline-none">
                                         <span class="text-amber-300 font-semibold">L</span>
                                     </div>
                                 </div>
-                                <input type="range" id="in-iceLiter" min="30" max="65" step="1" value="45" oninput="syncInput('iceLiter', 'range'); calculateTCO()" class="w-full">
+                                <input type="range" id="in-iceLiter" min="25" max="55" step="1" value="38" oninput="syncInput('iceLiter', 'range'); calculateTCO()" class="w-full">
                             </div>
                             <div>
                                 <div class="flex justify-between items-center text-[11px] mb-1">
@@ -314,9 +317,9 @@
 
                     <!-- Maintenance Savings -->
                     <div class="flex items-center justify-between pt-1 text-xs">
-                        <span class="text-slate-300">单车年均维保费节省 (免频繁换刹车片)</span>
+                        <span class="text-slate-300">单车年均维保费节省 (免机油/三滤/尿素)</span>
                         <div class="flex items-center gap-1">
-                            <input type="number" id="in-maintSave" value="2.5" min="0" max="6" step="0.1" oninput="calculateTCO()" class="w-14 bg-slate-900 border border-slate-700 rounded px-1.5 py-0.5 text-right text-xs font-bold text-emerald-400">
+                            <input type="number" id="in-maintSave" value="1.8" min="0" max="5" step="0.1" oninput="calculateTCO()" class="w-14 bg-slate-900 border border-slate-700 rounded px-1.5 py-0.5 text-right text-xs font-bold text-emerald-400">
                             <span class="text-slate-400">万元/年</span>
                         </div>
                     </div>
@@ -336,10 +339,10 @@
                             <i data-lucide="timer" class="w-4 h-4 text-emerald-400"></i>
                         </div>
                         <div class="text-2xl font-extrabold text-white tracking-tight" id="kpi-payback">
-                            1.1 <span class="text-sm font-normal text-emerald-400">年</span>
+                            1.4 <span class="text-sm font-normal text-emerald-400">年</span>
                         </div>
                         <div class="text-[11px] text-slate-400 mt-1" id="kpi-paybackMonths">
-                            约 13 个月跑回购车价差
+                            约 17 个月跑回购车价差
                         </div>
                     </div>
 
@@ -350,26 +353,26 @@
                             <i data-lucide="trending-up" class="w-4 h-4 text-teal-400"></i>
                         </div>
                         <div class="text-2xl font-extrabold text-emerald-400 tracking-tight" id="kpi-totalSave">
-                            ¥780 <span class="text-sm font-normal text-slate-300">万</span>
+                            ¥625 <span class="text-sm font-normal text-slate-300">万</span>
                         </div>
                         <div class="text-[11px] text-slate-400 mt-1" id="kpi-singleSave">
-                            单车5年净省 78 万元
+                            单车5年净省 62.5 万元
                         </div>
                     </div>
 
                     <!-- KPI 3: Per KM Energy Cost -->
                     <div class="glass-card rounded-2xl p-4 border-l-4 border-l-blue-400">
                         <div class="flex items-center justify-between text-xs text-slate-400 mb-1">
-                            <span>动能回收后实际电耗</span>
+                            <span>每公里能源成本</span>
                             <i data-lucide="gauge" class="w-4 h-4 text-blue-400"></i>
                         </div>
                         <div class="text-lg font-bold text-white flex items-baseline gap-1.5">
-                            <span class="text-emerald-400" id="kpi-evPerKm">¥0.54</span>
+                            <span class="text-emerald-400" id="kpi-evPerKm">¥1.09</span>
                             <span class="text-xs text-slate-500">vs</span>
-                            <span class="text-amber-400 line-through text-sm" id="kpi-icePerKm">¥3.33</span>
+                            <span class="text-amber-400 line-through text-sm" id="kpi-icePerKm">¥2.81</span>
                         </div>
                         <div class="text-[11px] text-blue-300 mt-1.5" id="kpi-kmSaveRatio">
-                            动能回收省电达 50%
+                            每公里立省 ¥1.72 (省 61%)
                         </div>
                     </div>
 
@@ -380,10 +383,10 @@
                             <i data-lucide="leaf" class="w-4 h-4 text-green-400"></i>
                         </div>
                         <div class="text-2xl font-extrabold text-white tracking-tight" id="kpi-co2">
-                            2,450 <span class="text-sm font-normal text-green-400">吨</span>
+                            1,980 <span class="text-sm font-normal text-green-400">吨</span>
                         </div>
                         <div class="text-[11px] text-slate-400 mt-1" id="kpi-trees">
-                            相当于种植 13.4 万棵冷杉
+                            相当于种植 10.8 万棵冷杉
                         </div>
                     </div>
                 </div>
@@ -394,9 +397,9 @@
                         <div>
                             <h3 class="text-sm font-bold text-white flex items-center gap-2">
                                 <i data-lucide="line-chart" class="w-4 h-4 text-emerald-400"></i>
-                                全生命周期 (5年) 累计总持有成本 TCO 黄金交叉图 (含动能回收)
+                                全生命周期 (5年) 累计总持有成本 TCO 黄金交叉图 (单车基准)
                             </h3>
-                            <p class="text-xs text-slate-400">多维度动态運營成本對比</p>
+                            <p class="text-xs text-slate-400">包含初始购车成本 + 历年累计电费/油费 + 历年维保支出</p>
                         </div>
                         <div class="flex items-center gap-4 text-xs">
                             <span class="flex items-center gap-1.5 text-emerald-400 font-medium">
@@ -421,7 +424,7 @@
                             </span>
                             <div>
                                 <h3 class="text-sm font-bold text-white">大客户提案 / 微信报价话术自动生成 (含动能回收亮点)</h3>
-                                <p class="text-[11px] text-slate-400">一键複製專為礦山與山地老闆量身打造的極致省錢話術</p>
+                                <p class="text-[11px] text-slate-400">根据上方实时试算结果动态合成，可直接复制发给物流老板、经销商或贴入 PPT</p>
                             </div>
                         </div>
                         <button onclick="copyProposalText()" class="flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold shadow-lg shadow-emerald-900/40 transition-all active:scale-95">
@@ -482,13 +485,15 @@
             showToast("专属充能成功 ❤️", sweetMessages[sweetIndex]);
         }
 
+        // 四个经典的运营场景预设（带有各自合理的动能回收率）
         const presets = {
-            port: { name: "平原港口短倒", fleetSize: 15, dailyKm: 250, annualDays: 320, evPrice: 56, evKwh: 135, elecRate: 0.70, icePrice: 36, iceLiter: 35, fuelRate: 7.4, maintSave: 1.5, regenRate: 0 },
-            mine: { name: "矿区/山区重载短倒", fleetSize: 10, dailyKm: 300, annualDays: 300, evPrice: 62, evKwh: 145, elecRate: 0.75, icePrice: 38, iceLiter: 45, fuelRate: 7.4, maintSave: 2.5, regenRate: 50 },
-            extremeMountain: { name: "极端高山矿山专线", fleetSize: 10, dailyKm: 280, annualDays: 300, evPrice: 65, evKwh: 150, elecRate: 0.70, icePrice: 40, iceLiter: 50, fuelRate: 7.4, maintSave: 3.0, regenRate: 80 }
+            port: { name: "港口短倒物流", fleetSize: 15, dailyKm: 250, annualDays: 320, evPrice: 56, evKwh: 135, elecRate: 0.70, icePrice: 36, iceLiter: 35, fuelRate: 7.4, maintSave: 1.5, regenRate: 10 },
+            mine: { name: "矿区/钢厂重载短倒", fleetSize: 10, dailyKm: 300, annualDays: 300, evPrice: 62, evKwh: 145, elecRate: 0.75, icePrice: 38, iceLiter: 38, fuelRate: 7.4, maintSave: 1.8, regenRate: 50 },
+            trunk: { name: "中长途干线物流", fleetSize: 20, dailyKm: 500, annualDays: 310, evPrice: 72, evKwh: 155, elecRate: 0.85, icePrice: 42, iceLiter: 36, fuelRate: 7.4, maintSave: 2.0, regenRate: 20 },
+            muck: { name: "城建渣土/商砼运输", fleetSize: 12, dailyKm: 200, annualDays: 280, evPrice: 65, evKwh: 160, elecRate: 0.72, icePrice: 40, iceLiter: 42, fuelRate: 7.4, maintSave: 2.0, regenRate: 30 }
         };
 
-        let currentScenarioName = "矿区/山区重载短倒";
+        let currentScenarioName = "矿区/钢厂重载短倒";
 
         function syncInput(id, source) {
             const numEl = document.getElementById('num-' + id);
@@ -520,7 +525,7 @@
             document.getElementById('in-maintSave').value = p.maintSave;
 
             document.querySelectorAll('.preset-btn').forEach(btn => {
-                btn.className = "preset-btn flex-1 sm:flex-initial px-3 py-1.5 rounded-xl text-xs font-medium bg-slate-800 hover:bg-emerald-600/20 hover:text-emerald-300 border border-slate-700 transition-all";
+                btn.className = "preset-btn flex-1 sm:flex-initial px-3 py-1.5 rounded-xl text-xs font-medium bg-slate-800 hover:bg-emerald-600/20 hover:text-emerald-300 hover:border-emerald-500/40 border border-slate-700 transition-all";
             });
             const activeBtn = document.getElementById('preset-' + key);
             if (activeBtn) {
@@ -540,14 +545,14 @@
             const regenRate = parseFloat(document.getElementById('num-regenRate').value) || 50; // 0-100% 动能回收率
             
             const icePrice = parseFloat(document.getElementById('in-icePrice').value) || 38;
-            const iceLiter = parseFloat(document.getElementById('num-iceLiter').value) || 45;
+            const iceLiter = parseFloat(document.getElementById('num-iceLiter').value) || 38;
             const fuelRate = parseFloat(document.getElementById('num-fuelRate').value) || 7.4;
-            const maintSave = parseFloat(document.getElementById('in-maintSave').value) || 2.5;
+            const maintSave = parseFloat(document.getElementById('in-maintSave').value) || 1.8;
 
             const annualKm = dailyKm * annualDays;
             document.getElementById('val-annualKm').textContent = annualKm.toLocaleString() + " 公里/年";
 
-            // 核心：套用车队强度區塊中的 0-100% 动能回收率
+            // 核心：套用 0-100% 动能回收率對電耗的實際抵扣
             const effectiveEvKwh = baseEvKwh * (1 - (regenRate / 100));
 
             const evPerKm = (effectiveEvKwh / 100) * elecRate;
@@ -604,9 +609,9 @@
 
             updateChart(labels, evCumCosts, iceCumCosts);
 
-            const proposalCopy = `【${currentScenarioName}・纯电重卡全生命周期 TCO 效益测算报告（含 ${regenRate}% 动能回收）】\n` +
-                `📊 运营基准：车队规模 ${fleetSize} 台，日均行驶 ${dailyKm} km（年行驶 ${(annualKm/10000).toFixed(1)} 万公里），下山动能回收率设为 ${regenRate}%。\n` +
-                `⛰️ 核心杀手锏【下山动能回收】：传统燃油重卡山区重载下山需频繁踩刹车、烧油且磨损刹车片（油耗高达 ${iceLiter}L/100km），而纯电重卡依托电机反拖，下山位能转化率达 ${regenRate}%，每公里电费仅需 ¥${evPerKm.toFixed(2)}！\n` +
+            const proposalCopy = `【${currentScenarioName}・纯电重卡全生命周期 TCO 效益测算报告（含 ${regenRate}% 下山动能回收）】\n` +
+                `📊 运营基准：车队规模 ${fleetSize} 台，日均行驶 ${dailyKm} km（年行驶 ${(annualKm/10000).toFixed(1)} 万公里），动能回收率设为 ${regenRate}%。\n` +
+                `⛰️ 核心杀手锏【下山动能回收】：传统燃油重卡下山需频繁踩刹车、烧油且磨损刹车片（油耗约 ${iceLiter}L/100km），而纯电重卡依托电机反拖，下山位能转化率达 ${regenRate}%，每公里电费仅需 ¥${evPerKm.toFixed(2)}！\n` +
                 `💰 极致省钱：单车每年可节省燃料与维保费用共计 ${annualSingleOpSaveWan.toFixed(1)} 万元，仅需约 ${paybackMonths} 个月（${paybackYears.toFixed(1)} 年）即可完全收回购车价差。5 年运营周期内，单车净省 ${fiveYearSingleNetSaveWan.toFixed(1)} 万元，${fleetSize} 台车队累计利润空间高达 ${Math.round(fiveYearFleetNetSaveWan).toLocaleString()} 万元！\n` +
                 `🛡️ 安全与维保：下山电机反拖制动，彻底告别传统燃油车淋水器与频繁更换刹车蹄片的烦恼，年均维保再省 ${maintSave} 万元！`;
 
